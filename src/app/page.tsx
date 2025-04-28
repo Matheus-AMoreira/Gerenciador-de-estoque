@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
-export default function ProductRegistration() {
+export default function Home() {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -50,13 +51,13 @@ export default function ProductRegistration() {
   const validatePrice = (price: string, currency: string) => {
     if (!price) return currency === 'BRL' ? 'Preço de compra é obrigatório' : 'Purchase price is required';
     
-    const brlRegex = /^\d+(,\d{0,2})?$/; // Ex.: 123,45 ou 123
-    const usdRegex = /^\d+(\.\d{0,2})?$/; // Ex.: 123.45 ou 123
+    const brlRegex = /^\d+(,\d{0,2})?$/;
+    const usdRegex = /^\d+(\.\d{0,2})?$/;
     
     if (currency === 'BRL' && !brlRegex.test(price)) {
       return 'Formato inválido. Use vírgula para Reais (ex.: 10,50)';
     }
-    if (currency === 'US' && !usdRegex.test(price)) {
+    if (currency === 'USD' && !usdRegex.test(price)) {
       return 'Invalid format. Use dot for Dollars (ex.: 10.50)';
     }
     return '';
@@ -123,7 +124,7 @@ export default function ProductRegistration() {
           saleCurrency: 'BRL',
         });
         setErrors({});
-        setCurrentPage(1); // Voltar para a primeira página para mostrar o novo produto
+        setCurrentPage(1);
         fetchProducts(1, searchTerm);
       } else {
         const errorData = await response.json();
@@ -136,20 +137,15 @@ export default function ProductRegistration() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1); // Resetar para a primeira página ao pesquisar
+    setCurrentPage(1);
     fetchProducts(1, searchTerm);
-  };
-
-  const formatDate = (date: string | null) => {
-    if (!date) return '-';
-    return new Intl.DateTimeFormat('pt-BR').format(new Date(date));
   };
 
   const formatPrice = (price: number | null, currency: string | null) => {
     if (!price || !currency) return '-';
     return new Intl.NumberFormat(currency === 'BRL' ? 'pt-BR' : 'en-US', {
       style: 'currency',
-      currency: currency === 'BRL' ? 'BRL' : 'USD',
+      currency: currency,
     }).format(price);
   };
 
@@ -248,8 +244,8 @@ export default function ProductRegistration() {
                 onChange={handleChange}
                 className="mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
-                <option value="BRL">Real (R$)</option>
-                <option value="US">Dólar (US$)</option>
+                <option value="BRL">BRL (R$)</option>
+                <option value="USD">USD (US$)</option>
               </select>
             </div>
             {errors.purchasePrice && (
@@ -278,8 +274,8 @@ export default function ProductRegistration() {
                 onChange={handleChange}
                 className="mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
-                <option value="BRL">Real (R$)</option>
-                <option value="US">Dólar (US$)</option>
+                <option value="BRL">BRL (R$)</option>
+                <option value="USD">USD (US$)</option>
               </select>
             </div>
             {errors.salePrice && <p className="text-red-500 text-sm mt-1">{errors.salePrice}</p>}
@@ -297,7 +293,7 @@ export default function ProductRegistration() {
       </div>
 
       {/* Lista de Produtos */}
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto mt-8">
+      <div className="bg-white rounded-lg shadow-lg p-6 max-w-screen mx-auto mt-8">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Produtos Cadastrados</h2>
 
         {/* Barra de Pesquisa */}
@@ -333,6 +329,7 @@ export default function ProductRegistration() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço de Compra</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço de Venda</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Cadastro</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -340,7 +337,7 @@ export default function ProductRegistration() {
                     <tr key={product.id}>
                       <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{formatDate(product.expiration_date)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{product.expiration_date || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{product.quantity}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {formatPrice(product.purchase_price, product.purchase_currency)}
@@ -348,7 +345,15 @@ export default function ProductRegistration() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {formatPrice(product.sale_price, product.sale_currency)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">{formatDate(product.created_at)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{product.created_at}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link
+                          href={`/EditarProduto?id=${product.id}`}
+                          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                        >
+                          Editar
+                        </Link>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

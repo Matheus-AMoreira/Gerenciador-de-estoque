@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +24,36 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="pt-BR">
+      <body className="min-h-screen bg-gray-100 flex flex-col">
+        {/* Navbar */}
+        <nav className="bg-blue-600 text-white p-4 shadow-md">
+          <div className="container mx-auto flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Gerenciamento de Produtos</h1>
+            <ul className="flex space-x-4">
+              <li>
+                <Link href="/" className="hover:text-blue-200">
+                  Cadastrar Produto
+                </Link>
+              </li>
+              <li>
+                <Link href="/EditarProduto" className="hover:text-blue-200">
+                  Editar Produto
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        {/* Main Content */}
+        <main className="flex-grow">{children}</main>
+
+        {/* Footer */}
+        <footer className="bg-gray-800 text-white p-4">
+          <div className="container mx-auto text-center">
+            <p>© 2025 Cadastro de Produtos. Todos os direitos reservados.</p>
+          </div>
+        </footer>
       </body>
     </html>
   );

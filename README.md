@@ -1,40 +1,12 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Sobre
+  Um formulário para cadastro de produtos usando Next, Node e Postgres.
 
 ## SQL
 
 -- Deleta a tabela caso já exista uma
 drop if exists table products;
 
--- Cri a tabela de produtos
+-- Cria a tabela de produtos
 CREATE TABLE products (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
@@ -48,10 +20,10 @@ CREATE TABLE products (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Opcional: Limpar a tabela products antes de inserir novos dados
+-- Limpar a tabela products antes de inserir novos dados
 TRUNCATE TABLE products RESTART IDENTITY;
 
--- Inserir 100 registros fictícios na tabela products
+-- 100 registros fictícios na tabela products
 INSERT INTO products (name, category, expiration_date, quantity, purchase_price, purchase_currency, sale_price, sale_currency, created_at) VALUES
 ('Arroz Integral 5kg', 'Alimentos', '2025-12-31', 200, 15.50, 'BRL', 22.00, 'BRL', '2024-01-15 10:00:00'),
 ('Smartphone Galaxy S23', 'Eletrônicos', NULL, 50, 800.00, 'USD', 1000.00, 'USD', '2024-02-20 14:30:00'),
@@ -152,4 +124,4 @@ INSERT INTO products (name, category, expiration_date, quantity, purchase_price,
 
 -- Verificar os dados inseridos
 SELECT COUNT(*) FROM products;
-SELECT * FROM products LIMIT 5;
+SELECT * FROM products LIMIT 10;

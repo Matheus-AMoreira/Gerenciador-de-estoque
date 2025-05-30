@@ -41,6 +41,11 @@ export default function RootLayout({
                   Editar Produto
                 </Link>
               </li>
+              <li>
+                <Link href="/Previsoes" className="hover:text-blue-200">
+                  Previsões
+                </Link>
+              </li>
             </ul>
           </div>
         </nav>

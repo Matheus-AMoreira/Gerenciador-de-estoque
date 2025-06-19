@@ -1,6 +1,14 @@
 ## Sobre
   Um formulário para cadastro de produtos usando Next, Node e Postgres.
 
+## ENV exemplo
+
+PG_USER: "postgres"
+PG_HOST: "localhost"
+PG_DATABASE: "estoque"
+PG_PASSWORD: "postgres"
+PG_PORT: "5432"
+
 ## SQL
 
 -- Deleta a tabela caso já exista uma

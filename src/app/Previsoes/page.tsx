@@ -26,7 +26,7 @@ export default function Predictions() {
   // Função para buscar categorias
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/categorias');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_PY_BACKEND}/api/categorias`);
       if (!response.ok) {
         throw new Error('Erro ao buscar categorias');
       }
@@ -44,8 +44,8 @@ export default function Predictions() {
     setUpdateStatus(null);
     try {
       const url = selectedCategory === 'Todas'
-        ? 'http://localhost:5000/api/previsoes'
-        : `http://localhost:5000/api/previsoes?categoria=${selectedCategory}`;
+        ? `${process.env.NEXT_PUBLIC_PY_BACKEND}/api/previsoes`
+        : `${process.env.NEXT_PUBLIC_PY_BACKEND}/api/previsoes?categoria=${selectedCategory}`;
       
       const response = await fetch(url);
       if (!response.ok) {
@@ -77,7 +77,7 @@ export default function Predictions() {
         const promises = categories
           .filter((cat) => cat !== 'Todas')
           .map((cat) =>
-            fetch(`http://localhost:5000/api/products_por_categoria?categoria=${cat}`).then((res) => {
+            fetch(`${process.env.NEXT_PUBLIC_PY_BACKEND}/api/products_por_categoria?categoria=${cat}`).then((res) => {
               if (!res.ok) throw new Error(`Erro ao buscar histórico para ${cat}`);
               return res.json();
             })
@@ -86,7 +86,7 @@ export default function Predictions() {
         setHistoricalData(results);
       } else {
         const response = await fetch(
-          `http://localhost:5000/api/products_por_categoria?categoria=${selectedCategory}`
+          `${process.env.NEXT_PUBLIC_PY_BACKEND}/api/products_por_categoria?categoria=${selectedCategory}`
         );
         if (!response.ok) {
           throw new Error(`Erro ao buscar histórico para ${selectedCategory}`);
@@ -111,7 +111,7 @@ export default function Predictions() {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/api/atualizar_previsoes?categoria=${selectedCategory}`,
+        `${process.env.NEXT_PUBLIC_PY_BACKEND}/api/atualizar_previsoes?categoria=${selectedCategory}`,
         { method: 'POST' }
       );
       if (!response.ok) {

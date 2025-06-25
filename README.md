@@ -12,7 +12,7 @@
   BACKEND_REPO_URL=https://github.com/Matheus-AMoreira/api-previsoes.git
 
   # Frontend
-  FRONTEND_PORT=9000<
+  FRONTEND_PORT=9000
   FRONTEND_REPO_URL=https://github.com/Matheus-AMoreira/gerenciador-estoque.git
 
   # Database
@@ -30,7 +30,7 @@
     services:
 
     # Serviço de Banco de Dados PostgreSQL
-    ```db:
+    db:
       container_name: ${PG_CONTAINER}
       image: postgres:16
       environment:
@@ -79,7 +79,7 @@
       build:
         context: ./api-previsoes
         args: 
-          BACKEND_REPO_URL: ${BACKEND_REPO_URL}
+          BACKEND_REPO_URL: ${BACKEND_REPO_URL}S
         dockerfile: dockerfile.backend
       environment:
         DATABASE_URL: postgresql://${PG_USER}:${PG_PASSWORD}@${PG_CONTAINER}:${PG_PORT}/${PG_DATABASE}

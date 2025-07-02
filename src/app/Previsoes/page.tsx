@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from 'react';
 
-// Interfaces atualizadas para os dados
+// --- Interfaces (sem alterações) ---
 interface DataItem {
   ano: number;
   mes: number;
   quantidade: number;
 }
 
-// A resposta agora pode conter 'categoria' ou 'name'
 interface DataResponse {
   categoria?: string;
   name?: string;
@@ -19,8 +18,8 @@ interface DataResponse {
 type FilterType = 'category' | 'name';
 
 export default function Predictions() {
-  // --- Estados do Componente ---
-  const [filterType, setFilterType] = useState<FilterType>('category'); // Novo estado: 'category' ou 'name'
+  // --- Estados do Componente (sem alterações) ---
+  const [filterType, setFilterType] = useState<FilterType>('category');
   const [categories, setCategories] = useState<string[]>([]);
   const [names, setNames] = useState<string[]>([]);
   const [selectedValue, setSelectedValue] = useState<string>('Todos');
@@ -29,13 +28,12 @@ export default function Predictions() {
   const [historicalData, setHistoricalData] = useState<DataResponse[]>([]);
   
   const [showHistorical, setShowHistorical] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false); // Inicia como false
   const [error, setError] = useState<string | null>(null);
   const [updateStatus, setUpdateStatus] = useState<string | null>(null);
 
-  // --- Funções de Busca de Dados (Atualizadas) ---
+  // --- Funções de Busca de Dados (Lógica Refatorada) ---
 
-  // Busca tanto categorias quanto nomes na montagem inicial
   const fetchFilterOptions = async () => {
     try {
       const [catResponse, nameResponse] = await Promise.all([
@@ -50,55 +48,48 @@ export default function Predictions() {
       
       setCategories(['Todos', ...catData.categorias]);
       setNames(['Todos', ...nameData.names]);
-
     } catch (err: any) {
       setError(err.message);
     }
   };
 
-  // Busca previsões com base no filtro selecionado
+  // Função SIMPLIFICADA apenas para buscar previsões
   const fetchPredictions = async () => {
+    if (selectedValue === 'Todos') {
+      setPredictions([]); // Limpa a tabela se 'Todos' estiver selecionado
+      return;
+    }
     setLoading(true);
     setError(null);
     setUpdateStatus(null);
     try {
-      if (selectedValue === 'Todos') {
-        // Para "Todos", busca todas as previsões
-        const response = await fetch(`${process.env.NEXT_PUBLIC_PY_BACKEND}/api/predictions`);
-        if (response.ok) {
-            const data = await response.json();
-            setPredictions(Array.isArray(data) ? data : []);
-        } else {
-            setPredictions([]);
-        }
-        return;
-      }
-      
       const url = `${process.env.NEXT_PUBLIC_PY_BACKEND}/api/predictions?${filterType}=${selectedValue}`;
       const response = await fetch(url);
       
       if (response.status === 404) {
-        // Se não encontrar, tenta gerar novas previsões
-        await handleUpdatePredictions();
+        // Se não encontrar, apenas limpa os dados e informa o usuário.
+        setPredictions([]);
+        setUpdateStatus(`Nenhuma previsão gerada para ${selectedValue}. Clique em "Atualizar" para tentar gerar.`);
       } else if (response.ok) {
         const data = await response.json();
-        setPredictions(Array.isArray(data) ? data : [data]);
+        setPredictions(Array.isArray(data) ? data : []);
       } else {
-        throw new Error(`Erro ao buscar previsões para ${selectedValue}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Erro ao buscar previsões para ${selectedValue}`);
       }
     } catch (err: any) {
       setError(err.message);
-      setPredictions([]);
+      setPredictions([]); // Garante que a lista esteja vazia em caso de erro
     } finally {
       setLoading(false);
     }
   };
 
-  // Busca dados históricos
+  // Função SIMPLIFICADA apenas para buscar dados históricos
   const fetchHistoricalData = async () => {
-    if (selectedValue === 'Todos') {
-        setHistoricalData([]);
-        return;
+    if (selectedValue === 'Todos' || !showHistorical) {
+      setHistoricalData([]);
+      return;
     }
     setLoading(true);
     setError(null);
@@ -106,7 +97,8 @@ export default function Predictions() {
       const url = `${process.env.NEXT_PUBLIC_PY_BACKEND}/api/products?${filterType}=${selectedValue}`;
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`Erro ao buscar histórico para ${selectedValue}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Erro ao buscar histórico para ${selectedValue}`);
       }
       const data = await response.json();
       setHistoricalData([data]);
@@ -118,76 +110,68 @@ export default function Predictions() {
     }
   };
 
-  // Atualiza as previsões
+  // Função de ATUALIZAÇÃO, agora explícita e com melhor tratamento de erro
   const handleUpdatePredictions = async () => {
     if (selectedValue === 'Todos') {
       setUpdateStatus('Selecione um item específico para atualizar as previsões.');
-      return false;
+      return;
     }
     setLoading(true);
+    setError(null); // Limpa erros antigos
     setUpdateStatus(`Atualizando previsões para ${selectedValue}...`);
+    
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_PY_BACKEND}/api/predictions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [filterType]: selectedValue }), // Envia no corpo da requisição
+        body: JSON.stringify({ [filterType]: selectedValue }),
       });
       
       const data = await response.json();
       if (!response.ok) {
+        // Exibe o erro específico retornado pelo backend
         throw new Error(data.error || `Não foi possível atualizar previsões para ${selectedValue}`);
       }
 
       setUpdateStatus(`Previsões atualizadas com sucesso para ${selectedValue}!`);
-      // Atualiza o estado de previsões com a resposta da API
-      const newPredictionData = {
-        [filterType]: data[filterType],
-        dados: data.previsoes
-      };
-      setPredictions(prev => {
-        // Remove a previsão antiga (se existir) e adiciona a nova
-        const otherPredictions = prev.filter(p => p[filterType] !== selectedValue);
-        return [...otherPredictions, newPredictionData];
-      });
-      return true;
+      // Após o sucesso, busca novamente os dados para garantir consistência
+      await fetchPredictions();
 
     } catch (err: any) {
-      setUpdateStatus(err.message);
-      return false;
+      // Define o erro no estado para exibição clara
+      setError(err.message);
+      setUpdateStatus(null); // Limpa a mensagem de status
+      setPredictions([]); // Garante que a lista de previsões fique vazia
     } finally {
       setLoading(false);
     }
   };
 
-  // --- Efeitos do Componente ---
+  // --- Efeitos do Componente (Hooks) ---
 
   useEffect(() => {
     fetchFilterOptions();
   }, []);
 
+  // useEffect agora busca tanto previsões quanto histórico de forma mais limpa
   useEffect(() => {
     fetchPredictions();
-    if (showHistorical) {
-      fetchHistoricalData();
-    } else {
-      setHistoricalData([]);
-    }
+    fetchHistoricalData();
   }, [selectedValue, filterType, showHistorical]);
 
-  // Handler para trocar o tipo de filtro
+  // Handler para trocar o tipo de filtro (sem alterações)
   const handleFilterTypeChange = (type: FilterType) => {
     setFilterType(type);
-    setSelectedValue('Todos'); // Reseta a seleção ao trocar o tipo
+    setSelectedValue('Todos');
   };
 
-  // --- Lógica de Renderização ---
+  // --- Lógica de Renderização (sem grandes alterações, apenas se beneficia dos estados mais limpos) ---
 
   const currentOptions = filterType === 'category' ? categories : names;
 
-  // Função para unificar dados históricos e de previsão para a tabela
   const formatDataForTable = (data: DataResponse[], type: 'Previsão' | 'Histórico') => {
     return data.flatMap(item => 
-      item.dados.map(d => ({
+      (item.dados || []).map(d => ({
         key: `${item.categoria || item.name}-${type}-${d.ano}-${d.mes}`,
         identifier: item.categoria || item.name || 'N/A',
         type,
@@ -211,8 +195,8 @@ export default function Predictions() {
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Previsões de Demanda</h2>
 
         {/* --- Feedbacks --- */}
-        {error && <div className="p-4 mb-4 rounded bg-red-100 text-red-700">{error}</div>}
-        {updateStatus && <div className={`p-4 mb-4 rounded ${updateStatus.includes('Erro') || updateStatus.includes('Não') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{updateStatus}</div>}
+        {error && <div className="p-4 mb-4 rounded bg-red-100 text-red-700"><b>Erro:</b> {error}</div>}
+        {updateStatus && <div className="p-4 mb-4 rounded bg-blue-100 text-blue-700">{updateStatus}</div>}
 
         {/* --- Controles de Filtro --- */}
         <div className="mb-4 flex flex-wrap items-center gap-4">
@@ -245,7 +229,7 @@ export default function Predictions() {
             disabled={selectedValue === 'Todos' || loading}
             className="self-end bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400 transition"
           >
-            {loading ? 'Atualizando...' : 'Atualizar Previsões'}
+            {loading ? 'Processando...' : 'Atualizar Previsões'}
           </button>
 
           <div className="self-end flex items-center">
@@ -255,10 +239,11 @@ export default function Predictions() {
         </div>
 
         {/* --- Tabela de Dados --- */}
-        {loading && selectedValue !== 'Todos' ? (
+        {loading ? (
           <p className="text-gray-500">Carregando...</p>
         ) : combinedData.length > 0 ? (
           <div className="overflow-x-auto">
+            {/* O JSX da tabela permanece o mesmo */}
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -289,7 +274,7 @@ export default function Predictions() {
             </table>
           </div>
         ) : (
-          <p className="text-gray-500">{selectedValue === 'Todos' ? 'Selecione um item para ver os dados.' : 'Nenhum dado encontrado.'}</p>
+          <p className="text-gray-500">{selectedValue === 'Todos' ? 'Selecione um item para ver os dados.' : 'Nenhum dado para exibir.'}</p>
         )}
       </div>
     </div>
